@@ -164,7 +164,6 @@ composer.addPass(bloomPass);
 
 // --- Interacción y Animación (Método HTML) ---
 const welcomeElement = document.getElementById('welcome-text');
-let hasBeenClicked = false; // <-- 1. NUEVA VARIABLE DE ESTADO
 if (welcomeElement) {
     setTimeout(() => {
         welcomeElement.classList.add('animated-text');
@@ -236,20 +235,6 @@ window.addEventListener('click', (event) => {
     }
 });
 
-function showWelcomeAnimation() {
-    if (!welcomeElement) return;
-
-    // 1. Quitar la clase de desaparición (si la tuviera) y añadir la de aparición
-    welcomeElement.classList.remove('disappearing');
-    welcomeElement.classList.add('visible');
-
-    // 2. Esperar 3 segundos
-    setTimeout(() => {
-        // 3. Quitar la clase de aparición y añadir la de desaparición
-        welcomeElement.classList.remove('visible');
-        welcomeElement.classList.add('disappearing');
-    }, 3000);
-}
 
 const clock = new THREE.Clock();
 // Variables objetivo para la animación
