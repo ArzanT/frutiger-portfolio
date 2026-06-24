@@ -2,14 +2,53 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="icon" type="image/svg+xml" href="/messenger.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Frutiger Aero Portfolio</title>
+    <title>Enzo Zamora Portafolio</title>
   </head>
   <body>
+    <div id="flash-overlay" style="opacity: 0; pointer-events: none;"></div>
+    <div id="global-bubbles">
+    <div class="water-bubble wb1"></div>
+    <div class="water-bubble wb2"></div>
+    <div class="water-bubble wb3"></div>
+    <div class="water-bubble wb4"></div>
+    <div class="water-bubble wb5"></div>
+    <div class="water-bubble wb6"></div>
+    <div class="water-bubble wb7"></div>
+    </div>
     <video id="background-video" src="/background.mp4" autoplay muted loop playsinline style="display: none;"></video>
     <canvas class="webgl"></canvas>
-  <div id="welcome-text" class="hidden">Bienvenido</div>
+    <div id="menu-container" class="hidden-panel" style="opacity: 0; pointer-events: none;">
+      <button id="btn-bio" class="frutiger-card">
+          <h3>Autobiografía</h3>
+      </button>
+      <button class="frutiger-card">
+          <h3>Recuperando la promesa del mañana...</h3>
+      </button>
+      <button class="frutiger-card">
+          <h3>Recuperando la promesa del mañana...</h3>
+      </button>
+      <button class="frutiger-card">
+          <h3>Recuperando la promesa del mañana...</h3>
+      </button>
+  </div>
+<div id="bio-section" class="hidden-panel" style="opacity: 0; pointer-events: none;">
+    
+    <img src="/autobiography.jpeg" alt="Autobiografía" class="bio-image-3d" />
+    <div class="frutiger-panel-premium">
+        <h2>Sobre Mí</h2>
+        <p>
+            Hola, soy Enzo. Estudiante del septimo ciclo de Ingeniería de Sistemas en la Universidad Nacional Federico Villarreal. Desde muy pequeño me apaciona mucho la tecnología (sobre todo la computación e informática) y he dedicado gran parte de mi vida a aprender y mejorar mis habilidades en este campo. Me considero una persona curiosa, recuerdo que de niño solía desarmar aparatos electrónicos con tal de saber como funcionaban, eso incluye la primera computadora familiar que quise entender por qué no funcionaba el wifi y termine arruinando el puerto donde se conectaba la antena!
+        </p>
+        <p>
+            Busco especializarme en DevOps, me llama mucho la atención el despliegue de aplicaciones, automatizacion de procesos y uso de contenedores Docker.Mi enfoque combina lógica estructurada y creatividad visual, si me encuentro en un entorno de trabajo lo mas probable es que intente personalizarlo al máximo a mi gusto. Cuando no estoy trabajando en proyectos de la universidad, programando o personalizando mi entorno en linux, mantengo mi disciplina a través de rutinas de calistenia y juegos de ritmo. También disfruto explorar la preservación digital mediante la emulación de consolas retro y aplicando filtrado crt para mantener viva la experiencia.
+        </p>
+        <p>
+            Luego de pasar por diversas dificultades, entender el valor del esfuerzo en el trabajo y estar en constante aprendizaje, actualmente me encuentro enfocado en expandir mis conocimientos en DevOps y arquitecturas escalables. No soy un programador experto y de hecho tiendo a ser mas un "vibecoder" utilizando mis conocimientos teóricos de programación para aprovechar al máximo el uso de la inteligencia artificial como nuestra mejor herramienta de productividad. Mi objetivo es seguir creciendo profesionalmente y contribuir al desarrollo de soluciones innovadoras en el campo de la tecnología.
+        </p>
+    </div>
+</div>
     <script type="module" src="/src/main.ts"></script>
   </body>
 </html>

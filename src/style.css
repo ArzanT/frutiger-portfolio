@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;800&family=Open+Sans:wght@400;500;600&family=Ubuntu:wght@400;500;700&display=swap');
+
 * {
   margin: 0;
   padding: 0;
@@ -34,153 +36,6 @@ body {
   }
 }
 
-.hero {
-  position: relative;
-
-  .base,
-  .framework,
-  .vite {
-    inset-inline: 0;
-    margin: 0 auto;
-  }
-
-  .base {
-    width: 170px;
-    position: relative;
-    z-index: 0;
-  }
-
-  .framework,
-  .vite {
-    position: absolute;
-  }
-
-  .framework {
-    z-index: 1;
-    top: 34px;
-    height: 28px;
-    transform: perspective(2000px) rotateZ(300deg) rotateX(44deg) rotateY(39deg)
-      scale(1.4);
-  }
-
-  .vite {
-    z-index: 0;
-    top: 107px;
-    height: 26px;
-    width: auto;
-    transform: perspective(2000px) rotateZ(300deg) rotateX(40deg) rotateY(39deg)
-      scale(0.8);
-  }
-}
-
-#app {
-  width: 1126px;
-  max-width: 100%;
-  margin: 0 auto;
-  text-align: center;
-  border-inline: 1px solid var(--border);
-  min-height: 100svh;
-  display: flex;
-  flex-direction: column;
-  box-sizing: border-box;
-}
-
-#center {
-  display: flex;
-  flex-direction: column;
-  gap: 25px;
-  place-content: center;
-  place-items: center;
-  flex-grow: 1;
-
-  @media (max-width: 1024px) {
-    padding: 32px 20px 24px;
-    gap: 18px;
-  }
-}
-
-#next-steps {
-  display: flex;
-  border-top: 1px solid var(--border);
-  text-align: left;
-
-  & > div {
-    flex: 1 1 0;
-    padding: 32px;
-    @media (max-width: 1024px) {
-      padding: 24px 20px;
-    }
-  }
-
-  .icon {
-    margin-bottom: 16px;
-    width: 22px;
-    height: 22px;
-  }
-
-  @media (max-width: 1024px) {
-    flex-direction: column;
-    text-align: center;
-  }
-}
-
-#docs {
-  border-right: 1px solid var(--border);
-
-  @media (max-width: 1024px) {
-    border-right: none;
-    border-bottom: 1px solid var(--border);
-  }
-}
-
-#next-steps ul {
-  list-style: none;
-  padding: 0;
-  display: flex;
-  gap: 8px;
-  margin: 32px 0 0;
-
-  .logo {
-    height: 18px;
-  }
-
-  a {
-    color: var(--text-h);
-    font-size: 16px;
-    border-radius: 6px;
-    background: var(--social-bg);
-    display: flex;
-    padding: 6px 12px;
-    align-items: center;
-    gap: 8px;
-    text-decoration: none;
-    transition: box-shadow 0.3s;
-
-    &:hover {
-      box-shadow: var(--shadow);
-    }
-    .button-icon {
-      height: 18px;
-      width: 18px;
-    }
-  }
-
-  @media (max-width: 1024px) {
-    margin-top: 20px;
-    flex-wrap: wrap;
-    justify-content: center;
-
-    li {
-      flex: 1 1 calc(50% - 8px);
-    }
-
-    a {
-      width: 100%;
-      justify-content: center;
-      box-sizing: border-box;
-    }
-  }
-}
 
 #spacer {
   height: 88px;
@@ -190,58 +45,369 @@ body {
   }
 }
 
-.ticks {
-  position: relative;
-  width: 100%;
 
-  &::before,
-  &::after {
+
+.frutiger-panel {
+    background: rgba(255, 255, 255, 0.15);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.4);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    border-right: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 8px 32px 0 rgba(0, 163, 179, 0.2);
+    border-radius: 20px;
+    padding: 30px;
+    color: #ffffff;
+    
+    /* Posicionamiento en la pantalla */
+    position: absolute;
+    top: 50%;
+    right: 10%; /* Alineado a la derecha */
+    transform: translateY(-50%);
+    width: 400px;
+    max-width: 80%;
+    
+    /* Animación de entrada */
+    transition: opacity 0.8s ease-out, transform 0.8s ease-out;
+}
+
+/* Modificamos la clase hidden-panel para que aplique bien al contenedor central */
+.hidden-panel {
+    opacity: 0;
+    pointer-events: none;
+    transform: translate(-50%, -40%) !important;
+}
+
+.frutiger-panel.visible {
+    opacity: 1;
+    pointer-events: auto;
+    transform: translateY(-50%); /* Posición final */
+}
+
+.frutiger-panel h2 {
+    margin-bottom: 15px;
+    font-size: 2rem;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.frutiger-panel p {
+    margin-bottom: 15px;
+    line-height: 1.6;
+    font-size: 1.05rem;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+/* --- ESTILOS DEL MENÚ DE TARJETAS --- */
+#menu-container {
+    position: absolute;
+    top: 50%;
+    right: 8%; /* Ajusta este porcentaje si necesitas más separación de la izquierda */
+    transform: translateY(-50%);
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    width: 520px;
+    max-width: 80%;
+    transition: opacity 0.8s ease-out, transform 0.8s ease-out;
+    z-index: 10; /* Asegura que la interfaz HTML esté siempre sobre el canvas */
+}
+
+/* Cambiamos cómo aparece el menú */
+#menu-container.visible {
+    animation: slideInWithTrail 0.6s cubic-bezier(0.1, 0.9, 0.2, 1) forwards;
+    pointer-events: auto !important;
+    opacity: 1 !important;
+}
+
+.frutiger-card {
+    background: rgba(255, 255, 255, 0.15);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.4);
+    box-shadow: 0 4px 16px 0 rgba(0, 163, 179, 0.2);
+    border-radius: 15px;
+    padding: 20px;
+    color: #0b454e;
+    cursor: pointer;
+    text-align: center;
+    transition: all 0.3s ease;
+    min-height: 120px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1rem;
+    font-weight: 600; /* Hacemos la letra un poco más gruesa */
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+    font-family: 'Nunito', sans-serif; /* Letra redondeada y amigable */
+    font-weight: 800; /* Bien gruesa para que resalte en el cristal */
+}
+
+/* --- HOVER ACTUALIZADO PARA LAS SECCIONES --- */
+.frutiger-card:hover {
+    /* Más blanco translúcido para resaltar el botón sobre el fondo vivo */
+    background: rgba(255, 255, 255, 0.35); 
+    
+    /* Efecto de levitación 3D un poco más dinámico */
+    transform: translateY(-8px) scale(1.02); 
+    
+    /* Sombra externa con verde naturaleza + Resplandor blanco interno intenso */
+    box-shadow: 0 15px 30px 0 rgba(100, 220, 120, 0.4), inset 0 0 20px rgba(255, 255, 255, 0.8); 
+    
+    border: 1px solid rgba(255, 255, 255, 1);
+    
+    /* Oscurecemos un poquito más el texto al pasar el ratón para maximizar el contraste */
+    color: #053138; 
+}
+
+/* --- AJUSTES AL PANEL DE BIOGRAFÍA --- */
+#bio-panel {
+    display: flex; /* Para colocar imagen y texto lado a lado */
+    flex-direction: row;
+    gap: 30px;
+    align-items: center;
+    width: 700px; /* Un poco más ancho para que quepa la imagen */
+}
+
+.bio-image {
+    width: 200px;
+    height: 200px;
+    border-radius: 15px;
+    object-fit: cover; /* Evita que la imagen se deforme */
+    border: 3px solid rgba(255, 255, 255, 0.6);
+    box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+    flex-shrink: 0; /* Evita que la imagen se encoja por el texto */
+}
+
+/* En pantallas pequeñas, apilamos la imagen y el texto */
+@media (max-width: 768px) {
+    #bio-panel {
+        flex-direction: column;
+        width: 90%;
+    }
+}
+
+/* --- CONTENEDOR PRINCIPAL DE LA SECCIÓN --- */
+#bio-section {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 60px; /* Separación entre la imagen y el panel */
+    width: 90%;
+    max-width: 1000px;
+    z-index: 20;
+    transition: opacity 0.8s ease-out, transform 0.8s ease-out;
+}
+
+
+#bio-section.visible {
+    opacity: 1 !important;
+    pointer-events: auto !important;
+    transform: translate(-50%, -50%) !important;
+}
+
+/* --- IMAGEN EXTERNA CON ÁNGULO 3D --- */
+.bio-image-3d {
+    width: 380px;
+    height: 480px;
+    object-fit: cover;
+    border-radius: 20px;
+    /* Borde translúcido brillante */
+    border: 3px solid rgba(255, 255, 255, 0.7);
+    box-shadow: -15px 25px 35px rgba(0, 0, 0, 0.3), inset 0 0 20px rgba(255, 255, 255, 0.5);
+    
+    /* El efecto 3D: Inclinada a la derecha y ligeramente hacia abajo */
+    transform: perspective(1000px) rotateY(18deg) rotateX(8deg);
+    transition: transform 0.5s ease, box-shadow 0.5s ease;
+    flex-shrink: 0;
+    z-index: 2;
+}
+
+/* Al pasar el ratón, la imagen se acerca suavemente */
+.bio-image-3d:hover {
+    transform: perspective(1000px) rotateY(5deg) rotateX(2deg) scale(1.05);
+    box-shadow: -20px 30px 45px rgba(0, 0, 0, 0.4), inset 0 0 25px rgba(255, 255, 255, 0.6);
+}
+
+/* --- PANEL PREMIUM FRUTIGER AERO --- */
+.frutiger-panel-premium {
+    position: relative;
+    flex: 1;
+    /* Fondo que mezcla un blanco translúcido con un ligero toque aqua */
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.35) 0%, rgba(255, 255, 255, 0.1) 100%);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    
+    /* Bordes iluminados para simular cristal cortado */
+    border-top: 2px solid rgba(255, 255, 255, 0.9);
+    border-left: 2px solid rgba(255, 255, 255, 0.7);
+    border-right: 1px solid rgba(255, 255, 255, 0.2);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 24px;
+    padding: 40px;
+    color: #0b454e;
+    
+    /* Sombra exterior aqua y resplandor interior */
+    box-shadow: 0 15px 35px rgba(0, 163, 179, 0.2), inset 0 0 30px rgba(255, 255, 255, 0.2);
+    overflow: hidden; /* Importante para que el reflejo no se salga del borde */
+
+    max-height: 65vh; /* Evita que el cuadro crezca infinitamente hacia abajo */
+    overflow-y: auto; /* Activa el scroll si el texto supera la altura máxima */
+    padding-right: 25px; /* Deja espacio para la nueva barra de desplazamiento */
+}
+
+.frutiger-panel-premium p { 
+    margin-bottom: 15px; 
+    line-height: 1.6; 
+    font-size: 1rem; /* Reducimos ligeramente de 1.1rem a 1rem */
+    font-weight: 500; 
+    text-shadow: 0 1px 3px rgba(255, 255, 255, 0.6);
+    font-family: 'Ubuntu', sans-serif; /* Texto limpio y técnico para tu historia */
+    font-weight: 500;
+}
+
+/* El reflejo de luz superior (efecto Glossy / Mojado) */
+.frutiger-panel-premium::before {
     content: '';
     position: absolute;
-    top: -4.5px;
-    border: 5px solid transparent;
-  }
-
-  &::before {
+    top: 0;
     left: 0;
-    border-left-color: var(--border);
-  }
-  &::after {
-    right: 0;
-    border-right-color: var(--border);
-  }
+    width: 100%;
+    height: 45%;
+    background: linear-gradient(to bottom, rgba(255, 255, 255, 0.4), rgba(255, 255, 255, 0));
+    border-radius: 24px 24px 0 0;
+    pointer-events: none;
 }
 
-#welcome-text {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  color: rgba(0, 163, 179, 0.6); /* Opacidad reducida al 60% */
-  font-family: sans-serif;
-  font-size: 5rem;
-  font-weight: bold;
-  text-shadow: 0 0 10px rgba(0, 163, 179, 0.5), 0 0 25px rgba(0, 163, 179, 0.4); /* Resplandor más suave */
-  pointer-events: none;
-  opacity: 0; /* Estado inicial: invisible */
-  transform: translate(-50%, -50%) scale(0.8); /* Estado inicial: encogido */
-  /* La propiedad 'transition' se ha movido a una nueva clase */
+.frutiger-panel-premium h2, .frutiger-panel-premium p {
+    position: relative; /* Para que el texto se muestre sobre el reflejo */
+    z-index: 1;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+    margin-bottom: 20px; 
+    font-size: 2.2rem; 
+    font-family: 'Nunito', sans-serif; /* Título burbujeante */
+    font-weight: 800;
 }
 
-/* NUEVA CLASE: Solo para la animación */
-.animated-text {
-  transition: opacity 0.5s ease-out, transform 0.5s ease-out;
+.frutiger-panel-premium h2 { margin-bottom: 20px; font-size: 2.2rem; }
+.frutiger-panel-premium p { margin-bottom: 15px; line-height: 1.7; font-size: 1.1rem; }
+
+/* --- BURBUJAS DE AGUA CRISTALINAS (Globales) --- */
+#global-bubbles {
+    position: fixed;
+    top: 0; 
+    left: 0;
+    width: 100vw; 
+    height: 100vh;
+    pointer-events: none; /* Crucial para que no bloqueen tus clics */
+    z-index: 15; /* Detrás del panel de biografía pero sobre el canvas 3D */
+    overflow: hidden;
 }
 
-#welcome-text.visible {
-  opacity: 1;
-  transform: translate(-50%, -50%) scale(1);
+.water-bubble {
+    position: absolute;
+    border-radius: 50%;
+    /* Punto de luz intenso (specular highlight) en la esquina superior izquierda */
+    background: radial-gradient(circle at 25% 25%, rgba(255, 255, 255, 0.95) 0%, rgba(255, 255, 255, 0.1) 25%, rgba(255, 255, 255, 0) 50%, rgba(0, 163, 179, 0.15) 100%);
+    /* Sombra interna triple para crear volumen y refracción */
+    box-shadow: 
+        inset 15px 0 25px rgba(255, 255, 255, 0.5), 
+        inset -10px 0 20px rgba(0, 163, 179, 0.25), 
+        inset 0 -10px 20px rgba(255, 255, 255, 0.3),
+        0 15px 25px rgba(0, 0, 0, 0.15);
+    /* Distorsión del fondo: el secreto para que parezca agua real */
+    backdrop-filter: blur(5px) brightness(1.1);
+    -webkit-backdrop-filter: blur(5px) brightness(1.1);
+    border: 1px solid rgba(255, 255, 255, 0.4);
+    animation: floatUpGlobal infinite ease-in-out;
 }
 
-#welcome-text.disappearing {
-  opacity: 0;
-  transform: translate(-50%, -50%) scale(3);
+/* Tamaños más grandes y variados distribuidos en toda la pantalla */
+.wb1 { width: 140px; height: 140px; left: 10%; bottom: -160px; animation-duration: 14s; }
+.wb2 { width: 85px; height: 85px; left: 25%; bottom: -100px; animation-duration: 10s; animation-delay: 2s; }
+.wb3 { width: 200px; height: 200px; right: 12%; bottom: -220px; animation-duration: 18s; animation-delay: 1s; }
+.wb4 { width: 65px; height: 65px; right: 35%; bottom: -80px; animation-duration: 8s; animation-delay: 4s; }
+.wb5 { width: 160px; height: 160px; left: 45%; bottom: -180px; animation-duration: 15s; animation-delay: 5s; }
+.wb6 { width: 110px; height: 110px; right: 8%; bottom: -130px; animation-duration: 12s; animation-delay: 3s; }
+.wb7 { width: 55px; height: 55px; left: 5%; bottom: -60px; animation-duration: 7s; animation-delay: 6s; }
+
+/* Animación global de abajo hacia arriba con ligero balanceo lateral */
+@keyframes floatUpGlobal {
+    0% { transform: translateY(0) scale(1) translateX(0); opacity: 0; }
+    10% { opacity: 1; }
+    50% { transform: translateY(-60vh) scale(1.05) translateX(25px); }
+    90% { opacity: 1; }
+    100% { transform: translateY(-120vh) scale(1) translateX(-25px); opacity: 0; }
 }
-.hidden {
-  opacity: 0;
-  transform: translate(-50%, -50%) scale(0.5);
+
+/* Adaptación para móviles */
+@media (max-width: 850px) {
+    #bio-section {
+        flex-direction: column;
+        gap: 30px;
+    }
+    .bio-image-3d {
+        transform: perspective(1000px) rotateY(0deg) rotateX(5deg);
+        width: 220px;
+        height: 220px;
+    }
+}
+
+#flash-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: #ffffff;
+    z-index: 9999; /* Por encima de TODO */
+    pointer-events: none;
+    opacity: 0;
+    /* La velocidad a la que "regresa la vista" */
+    transition: opacity 1.0s ease-in; 
+}
+
+.flash-active {
+    opacity: 1 !important;
+    transition: none !important; /* El pantallazo inicial debe ser instantáneo */
+}
+
+@keyframes slideInWithTrail {
+    0% { 
+        transform: translate(100vw, -50%) scaleX(2.5); /* Estirado horizontalmente */
+        filter: blur(12px) drop-shadow(-20px 0 20px rgba(255, 255, 255, 0.9)); /* Rastro de luz */
+        opacity: 0; 
+    }
+    60% { 
+        transform: translate(calc(-50% - 30px), -50%) scaleX(0.8); /* Se pasa un poco y se comprime */
+        filter: blur(2px) drop-shadow(-5px 0 10px rgba(0, 163, 179, 0.8)); 
+        opacity: 1; 
+    }
+    100% { 
+        transform: translate(-50%, -50%) scaleX(1); /* Posición final */
+        filter: blur(0px) drop-shadow(0 0 0 transparent); 
+        opacity: 1; 
+    }
+}
+
+/* --- SCROLLBAR ESTILO FRUTIGER AERO --- */
+.frutiger-panel-premium::-webkit-scrollbar {
+    width: 8px;
+}
+.frutiger-panel-premium::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+    margin-block: 20px; /* Da un pequeño margen en las esquinas superior e inferior */
+}
+.frutiger-panel-premium::-webkit-scrollbar-thumb {
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.8) 0%, rgba(255, 255, 255, 0.4) 100%);
+    border: 1px solid rgba(255, 255, 255, 0.9);
+    border-radius: 10px;
+    box-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+}
+.frutiger-panel-premium::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 1); /* Brilla más al pasar el mouse por encima */
 }
