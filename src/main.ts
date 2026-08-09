@@ -9,24 +9,50 @@ import { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPa
 // --- Escena y Renderer ---
 const canvas = document.querySelector('canvas.webgl')!;
 const scene = new THREE.Scene();
-// Obtener el elemento de video del HTML
-const videoElement = document.getElementById('background-video') as HTMLVideoElement;
 
-if (videoElement) {
-    // Crear una textura a partir del video
-    videoElement.play().catch(error => {
-        console.warn("El video no pudo iniciarse automáticamente. Se requiere interacción del usuario.", error);
-    });    
-    const videoTexture = new THREE.VideoTexture(videoElement);
-    videoTexture.colorSpace = THREE.SRGBColorSpace; // Corrección de color importante
-    videoTexture.needsUpdate = true; // <<-- AÑADIR ESTA LÍNEA
-    // Usar la textura del video como fondo de la escena
-    scene.background = videoTexture;    
-} else {
-    // Si el video no se encuentra, usar un color de respaldo
-    scene.background = new THREE.Color('#a8e6cf');
-    console.warn('Elemento de video #background-video no encontrado. Usando color de fondo de respaldo.');
+// 1. FONDO E ILUMINACIÓN DE ENTORNO ENVOLVENTE
+const sceneColor = new THREE.Color('#d4f1f4');
+scene.background = sceneColor;
+scene.fog = new THREE.FogExp2(sceneColor, 0.04);
+
+// Crear un Domo/Cilindro gigante de fondo para simular un cielo/espacio infinito brillante
+const domeGeometry = new THREE.CylinderGeometry(30, 30, 60, 32, 1, true);
+const domeMaterial = new THREE.MeshBasicMaterial({
+    color: 0xe6f9ff,          // Un tono blanco-celeste súper brillante
+    side: THREE.BackSide,     // Renderizar las paredes internas del cilindro
+    fog: true
+});
+const backgroundDome = new THREE.Mesh(domeGeometry, domeMaterial);
+backgroundDome.rotation.x = Math.PI * 0.5; // Orientarlo de cara a la cámara
+scene.add(backgroundDome);
+// 2. ORBES DE AURA (Elementos de fondo para que las burbujas los refracten)
+const envGeometry = new THREE.SphereGeometry(1, 32, 32);
+const envMatGreen = new THREE.MeshBasicMaterial({ color: 0x88e1c6, transparent: true, opacity: 0.6 });
+const envMatBlue = new THREE.MeshBasicMaterial({ color: 0x5bc0eb, transparent: true, opacity: 0.6 });
+const envMatWhite = new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.4 });
+
+const bgOrbs: THREE.Mesh[] = [];
+
+// Creamos 25 esferas grandes flotando en el fondo (lejos de la cámara)
+for(let i = 0; i < 25; i++) {
+    const isGreen = i % 3 === 0;
+    const isWhite = i % 3 === 1;
+    const mesh = new THREE.Mesh(envGeometry, isGreen ? envMatGreen : (isWhite ? envMatWhite : envMatBlue));
+    
+    // Posiciones muy al fondo y dispersas
+    mesh.position.set(
+        (Math.random() - 0.5) * 40, 
+        (Math.random() - 0.5) * 40, 
+        -10 - Math.random() * 20 // En el eje Z negativo (hacia el fondo)
+    );
+    // Escalas gigantes
+    const scale = Math.random() * 4 + 2;
+    mesh.scale.setScalar(scale);
+    
+    scene.add(mesh);
+    bgOrbs.push(mesh); // Las guardamos para animarlas levemente luego
 }
+
 const sizes = {
     width: window.innerWidth,
     height: window.innerHeight
@@ -150,6 +176,82 @@ fontLoader.load('/fonts/helvetiker_regular.typeface.json', (font) => {
     scene.add(welcomeText);
 });
 
+// --- ILUMINACIÓN REORGANIZADA ---
+// Subimos la luz ambiental para que aclare uniformemente cualquier zona muerta del renderizado
+const ambientLight = new THREE.AmbientLight(0xffffff, 1.2); 
+scene.add(ambientLight);
+
+// Luz direccional suave para generar el punto de brillo blanco (Highlight) controlado en la burbuja
+const directionalLight = new THREE.DirectionalLight(0xffffff, 1.5);
+directionalLight.position.set(5, 8, 5);
+scene.add(directionalLight);
+
+// Una luz difusa que simula el color del cielo brillante rodeando los objetos
+const hemiLight = new THREE.HemisphereLight(0xffffff, 0xd4f1f4, 1.0);
+hemiLight.position.set(0, 20, 0);
+scene.add(hemiLight);
+
+const cyanLight = new THREE.PointLight(0x00a3b3, 2, 12);
+cyanLight.position.set(-2, 2, 2);
+scene.add(cyanLight);
+
+// --- SISTEMA DE BURBUJAS 3D ---
+interface BubbleData {
+    mesh: THREE.Mesh;
+    speed: number;
+    wobbleSpeed: number;
+    offset: number;
+    isPopping: boolean;
+}
+const bubbles: BubbleData[] = [];
+
+// El material perfecto: Cristal transparente que reacciona limpiamente a las luces sin saturarse
+const bubbleMaterial = new THREE.MeshPhysicalMaterial({
+    color: 0xffffff,
+    metalness: 0.0,
+    roughness: 0.0,           // Totalmente liso para reflejos limpios e hiperrealistas
+    transmission: 0.98,       // Deja pasar casi el 100% de la luz interna del fondo 3D
+    ior: 1.12,                // Refracción baja para que el contorno sea nítido y sin artefactos negros
+    thickness: 0.0,           // Mantenemos grosor cero para evitar cálculos oscuros en los bordes
+    side: THREE.FrontSide,    // Renderizar solo el frente evita el solapamiento interno de caras
+    transparent: true,
+    opacity: 0.4,             // Reducimos la opacidad base para que la esfera sea sutil y etérea
+
+    // Capa de brillo superior de alta intensidad (Glossy Effect)
+    clearcoat: 1.0,           
+    clearcoatRoughness: 0.0,
+    
+    // Eliminamos 'emissive' para que dejen de brillar como esferas incandescentes con el Bloom.
+    specularIntensity: 2.0,   // Multiplica la intensidad del destello reflejado por las luces
+    specularColor: new THREE.Color('#ffffff')
+});
+
+// Usamos una esfera con bastantes segmentos para que se vea perfecta y no poligonal
+const bubbleGeometry = new THREE.SphereGeometry(1, 32, 32);
+
+// Crear 20 burbujas distribuidas aleatoriamente
+for (let i = 0; i < 20; i++) {
+    const mesh = new THREE.Mesh(bubbleGeometry, bubbleMaterial);
+    
+    const scale = Math.random() * 0.3 + 0.05; // Tamaños variados
+    mesh.scale.set(scale, scale, scale);
+    
+    // Posiciones iniciales (abajo de la pantalla)
+    mesh.position.x = (Math.random() - 0.5) * 12; // Repartidas a lo ancho
+    mesh.position.y = -5 - Math.random() * 10;    // Repartidas hacia abajo
+    mesh.position.z = (Math.random() - 0.5) * 4;  // Diferentes profundidades
+    
+    scene.add(mesh);
+    
+    bubbles.push({
+        mesh: mesh,
+        speed: Math.random() * 0.015 + 0.005, // Velocidad de subida
+        wobbleSpeed: Math.random() * 2 + 1,   // Velocidad de tambaleo
+        offset: Math.random() * Math.PI * 2,  // Desfase para que no se muevan igual
+        isPopping: false
+    });
+}
+
 // --- Post-Procesamiento (Método Simplificado) ---
 const composer = new EffectComposer(renderer);
 composer.addPass(new RenderPass(scene, camera));
@@ -172,34 +274,51 @@ if (welcomeElement) {
 const raycaster = new THREE.Raycaster();
 const mouse = new THREE.Vector2();
 
-// 1. NUEVO: Evento para cambiar el cursor a una manito
+// 1. Evento para cambiar el cursor a una manito (Ahora incluye burbujas)
 window.addEventListener('mousemove', (event) => {
     mouse.x = (event.clientX / sizes.width) * 2 - 1;
     mouse.y = - (event.clientY / sizes.height) * 2 + 1;
     raycaster.setFromCamera(mouse, camera);
     
+    let isHovering = false;
+
+    // Chequear el perfil primero
     if (profileMesh.visible) {
         const intersects = raycaster.intersectObject(profileMesh);
-        if (intersects.length > 0) {
-            document.body.style.cursor = 'pointer';
-        } else {
-            document.body.style.cursor = 'default';
-        }
-    } else {
-        document.body.style.cursor = 'default';
+        if (intersects.length > 0) isHovering = true;
     }
+    
+    // Chequear las burbujas
+    const bubbleMeshes = bubbles.map(b => b.mesh);
+    const bubbleIntersects = raycaster.intersectObjects(bubbleMeshes);
+    if (bubbleIntersects.length > 0) isHovering = true;
+    
+    document.body.style.cursor = isHovering ? 'pointer' : 'default';
 });
 
-// 2. ÚNICO Evento Click para la foto 3D
+// 2. Eventos de Clic (Foto 3D y reventar burbujas)
 window.addEventListener('click', (event) => {
     mouse.x = (event.clientX / sizes.width) * 2 - 1;
     mouse.y = - (event.clientY / sizes.height) * 2 + 1;
     raycaster.setFromCamera(mouse, camera);
     
-    // Solo interactuar si la foto está visible
+    // A. Lógica para reventar burbujas
+    const bubbleMeshes = bubbles.map(b => b.mesh);
+    const bubbleIntersects = raycaster.intersectObjects(bubbleMeshes);
+    
+    if (bubbleIntersects.length > 0) {
+        // Encontramos la burbuja específica que el usuario clickeó
+        const clickedMesh = bubbleIntersects[0].object;
+        const bubbleData = bubbles.find(b => b.mesh === clickedMesh);
+        
+        if (bubbleData && !bubbleData.isPopping) {
+            bubbleData.isPopping = true; // Iniciamos la explosión
+        }
+    }
+    
+    // B. Lógica original para la foto de perfil
     if (profileMesh.visible) {
-        const intersects = raycaster.intersectObjects([profileMesh]);
-
+        const intersects = raycaster.intersectObject(profileMesh);
         if (intersects.length > 0) {
             const clickUV = intersects[0].uv;
             if (clickUV) {
@@ -214,7 +333,6 @@ window.addEventListener('click', (event) => {
 
             if (!isProfileMoved) {
                 isProfileMoved = true;
-                
                 targetPositionX = -2;   
                 targetRotationY = 1.2;   
                 targetRotationX = 0;  
@@ -224,7 +342,6 @@ window.addEventListener('click', (event) => {
                     welcomeElement.classList.remove('visible');
                     welcomeElement.classList.add('disappearing');
                 }
-
                 const menuElement = document.getElementById('menu-container');
                 if (menuElement) {
                     menuElement.classList.remove('hidden-panel');
@@ -239,25 +356,68 @@ window.addEventListener('click', (event) => {
 const clock = new THREE.Clock();
 // Variables objetivo para la animación
 let targetPositionX = 0; 
-let targetRotationY = 0; // <-- Valor positivo la hace apuntar hacia la derecha
-let targetRotationX = 0; // <-- Valor negativo inclina la parte superior hacia la cámara
+let targetRotationY = 0; 
+let targetRotationX = 0; 
 let isProfileMoved = false;
+
 // Variables para la transición combinada (Bloom 3D + Flash CSS)
 let isBloomTransitioning = false;
 let bloomTransitionProgress = 0;
 const initialBloomStrength = 0.15;
 let isFlashTriggered = false;
+let activeSectionTarget = ''; // <--- NUEVA VARIABLE: Nos dirá qué sección abrir
 
 function tick() {
-    const elapsedTime = clock.getElapsedTime();
+const elapsedTime = clock.getElapsedTime();
+
+    // Animación de los orbes del fondo
+    bgOrbs.forEach((orb, i) => {
+        orb.position.y += Math.sin(elapsedTime * 0.5 + i) * 0.01;
+        orb.rotation.y += 0.005;
+    });
+
     borderMesh.rotation.z = -elapsedTime * 0.5;
     waterUniforms.time.value = elapsedTime;
-    
     for (let i = 0; i < MAX_RIPPLES; i++) {
         if (waterUniforms.clickTimes.value[i] < 1.0) {
             waterUniforms.clickTimes.value[i] += 0.015;
         }
     }
+
+    // --- LÓGICA DE ANIMACIÓN DE BURBUJAS ---
+    bubbles.forEach(bubble => {
+        if (bubble.isPopping) {
+            // Animación de reventar: Se encogen rapidísimo y se aplanan un poco
+            bubble.mesh.scale.multiplyScalar(0.75);
+            bubble.mesh.scale.y *= 0.8; 
+            
+            // Cuando ya no se ven, hacemos "respawn" en el fondo
+            if (bubble.mesh.scale.x < 0.01) {
+                bubble.isPopping = false;
+                bubble.mesh.position.y = -5 - Math.random() * 3;
+                bubble.mesh.position.x = (Math.random() - 0.5) * 12;
+                
+                // Restaurar la forma y asignar nuevo tamaño
+                const scale = Math.random() * 0.3 + 0.05;
+                bubble.mesh.scale.set(scale, scale, scale);
+            }
+        } else {
+            // Movimiento natural flotando hacia arriba
+            bubble.mesh.position.y += bubble.speed;
+            // Tambaleo horizontal usando senos
+            bubble.mesh.position.x += Math.sin(elapsedTime * bubble.wobbleSpeed + bubble.offset) * 0.005;
+            
+            // Si la burbuja se sale muy arriba de la pantalla, la reciclamos enviándola al fondo
+            if (bubble.mesh.position.y > 6) {
+                bubble.mesh.position.y = -5 - Math.random() * 2;
+                bubble.mesh.position.x = (Math.random() - 0.5) * 12;
+            }
+        }
+        // Dentro de la función tick()
+        if (scene.background instanceof THREE.VideoTexture) {
+            scene.background.needsUpdate = true;
+        }
+    });
 
     profileMesh.position.x = THREE.MathUtils.lerp(profileMesh.position.x, targetPositionX, 0.05);
     profileMesh.rotation.y = THREE.MathUtils.lerp(profileMesh.rotation.y, targetRotationY, 0.05);
@@ -269,40 +429,50 @@ function tick() {
 
     // --- TRANSICIÓN COMBINADA: SOBRECARGA BLOOM -> FLASH GLOBAL ---
     if (isBloomTransitioning) {
-        bloomTransitionProgress += 0.015; // Velocidad a la que carga el brillo la foto
+        bloomTransitionProgress += 0.015; 
         
         if (bloomTransitionProgress < 0.5) {
-            // FASE 1: La foto brilla cada vez más (el Bloom sube de 0.3 hasta ~4.0)
             bloomPass.strength = initialBloomStrength + (bloomTransitionProgress * 2) * 4.0; 
         } else {
-            // FASE 2: El Bloom llegó a su límite. Disparamos la explosión blanca de CSS.
             if (!isFlashTriggered) {
-                isFlashTriggered = true; // Ponemos el seguro para que no se repita
+                isFlashTriggered = true; 
                 
                 const flash = document.getElementById('flash-overlay');
                 if (flash) {
-                    // Activamos la ceguera total instantánea
                     flash.classList.add('flash-active');
                     
-                    // Mientras estamos ciegos (400ms), hacemos el cambiazo en las sombras
                     setTimeout(() => {
-                        // Desaparece el entorno 3D
+                        // Ocultamos el entorno 3D
                         profileMesh.visible = false;
                         borderMesh.visible = false;
                         
-                        // Aparece la biografía HTML
+                        // Capturamos TODAS las secciones
                         const bio = document.getElementById('bio-section');
-                        if (bio) {
+                        const skills = document.getElementById('skills-section');
+                        const detail = document.getElementById('skill-detail-section');
+                        
+                        // 1. Ocultamos TODO por defecto para limpiar la pantalla
+                        if (bio) { bio.classList.remove('visible'); bio.classList.add('hidden-panel'); bio.style.opacity = '0'; bio.style.pointerEvents = 'none'; }
+                        if (skills) { skills.classList.remove('visible'); skills.classList.add('hidden-panel'); skills.style.opacity = '0'; skills.style.pointerEvents = 'none'; }
+                        if (detail) { detail.classList.remove('visible'); detail.classList.add('hidden-panel'); detail.style.opacity = '0'; detail.style.pointerEvents = 'none'; }
+                        
+                        // 2. Mostramos SOLO la sección que el usuario pidió
+                        if (activeSectionTarget === 'bio' && bio) {
                             bio.classList.remove('hidden-panel');
                             bio.classList.add('visible');
+                            bio.style.opacity = '1';
+                            bio.style.pointerEvents = 'auto';
+                        } else if (activeSectionTarget === 'skills' && skills) {
+                            skills.classList.remove('hidden-panel');
+                            skills.classList.add('visible');
+                            skills.style.opacity = '1';
+                            skills.style.pointerEvents = 'auto';
                         }
                         
-                        // FASE 3: Empezamos a quitar la pantalla blanca (dura 1.1s por tu CSS)
+                        // Quitamos el flash y reseteamos el ciclo
                         flash.classList.remove('flash-active');
-                        
-                        // Restauramos la luz 3D a la normalidad para el fondo
                         bloomPass.strength = initialBloomStrength;
-                        isBloomTransitioning = false; // Secuencia terminada
+                        isBloomTransitioning = false; 
                     }, 500); 
                 }
             }
@@ -316,20 +486,106 @@ function tick() {
     requestAnimationFrame(tick);
 }
 
-// --- Navegación HTML ---
+// ===================================================
+// CONTROLADORES DE INTERFAZ Y NAVEGACIÓN
+// ===================================================
+
+const menu = document.getElementById('menu-container');
 const btnBio = document.getElementById('btn-bio');
+const btnSkills = document.getElementById('btn-skills');
+
+// 1. Click en Autobiografía
 btnBio?.addEventListener('click', () => {
-    // 1. Ocultar el menú
-    const menu = document.getElementById('menu-container');
-    if (menu) {
-        menu.classList.remove('visible');
-        menu.classList.add('hidden-panel');
-    }
-    
-    // 2. Iniciar la recarga de energía del Bloom 3D
+    if (menu) { menu.classList.remove('visible'); menu.classList.add('hidden-panel'); }
+    activeSectionTarget = 'bio'; // Le decimos al tick() que abra la biografía
     isBloomTransitioning = true;
     bloomTransitionProgress = 0;
-    isFlashTriggered = false; // Reseteamos el seguro del flash
+    isFlashTriggered = false; 
+});
+
+// 2. Click en Habilidades
+btnSkills?.addEventListener('click', () => {
+    if (menu) { menu.classList.remove('visible'); menu.classList.add('hidden-panel'); }
+    activeSectionTarget = 'skills'; // Le decimos al tick() que abra habilidades
+    isBloomTransitioning = true;
+    bloomTransitionProgress = 0;
+    isFlashTriggered = false;
+});
+
+// 3. Interacción Hover de los Skill Items
+const skillItems = document.querySelectorAll('.skill-item');
+const txtTechDesc = document.getElementById('txt-tech-desc');
+const txtAppDesc = document.getElementById('txt-app-desc');
+
+skillItems.forEach(item => {
+    item.addEventListener('mouseenter', (e) => {
+        const target = e.currentTarget as HTMLElement;
+        const techName = target.getAttribute('data-tech') || '';
+        const techDesc = target.getAttribute('data-desc-tech') || '';
+        const appDesc = target.getAttribute('data-desc-app') || '';
+
+        if (txtTechDesc) txtTechDesc.innerHTML = `<strong>${techName}:</strong> ${techDesc}`;
+        if (txtAppDesc) txtAppDesc.innerHTML = appDesc;
+    });
+});
+
+// 4. Click en una habilidad: Transición Zoom hacia la Cámara (Vista detalle)
+const skillsSection = document.getElementById('skills-section');
+const skillDetailSection = document.getElementById('skill-detail-section');
+
+skillItems.forEach(item => {
+    item.addEventListener('click', (e) => {
+        const target = e.currentTarget as HTMLElement;
+        const techName = target.getAttribute('data-tech') || '';
+        
+        const detailTitle = document.getElementById('detail-title');
+        const detailDesc = document.getElementById('detail-desc');
+        
+        if (detailTitle) detailTitle.innerText = `Dashboard de Ejecución: ${techName}`;
+        if (detailDesc) detailDesc.innerText = `Entorno operativo y métricas estables. Esta captura ilustra la implementación funcional utilizando arquitectura limpia basada en las especificaciones del stack core.`;
+
+        if (skillsSection) {
+            skillsSection.style.transform = 'translate(-50%, -50%) scale(1.4)';
+            skillsSection.style.opacity = '0';
+            skillsSection.style.pointerEvents = 'none';
+        }
+
+        setTimeout(() => {
+            skillsSection?.classList.remove('visible');
+            skillsSection?.classList.add('hidden-panel');
+            if (skillsSection) skillsSection.style.transform = 'translate(-50%, -50%) scale(1)';
+
+            // CORRECCIÓN: Mostramos el skillDetailSection en lugar de skillsSection de nuevo
+            skillDetailSection?.classList.remove('hidden-panel');
+            skillDetailSection?.classList.add('visible');
+            if (skillDetailSection) {
+                skillDetailSection.style.opacity = '1';
+                skillDetailSection.style.pointerEvents = 'auto';
+            }
+        }, 300);
+    });
+});
+
+// 5. Botón de retorno desde la vista detallada
+const btnBackSkills = document.getElementById('btn-back-skills');
+btnBackSkills?.addEventListener('click', () => {
+    
+    // CORRECCIÓN: Ocultamos skillDetailSection en lugar de skillsSection
+    skillDetailSection?.classList.remove('visible');
+    skillDetailSection?.classList.add('hidden-panel');
+    if (skillDetailSection) {
+        skillDetailSection.style.opacity = '0';
+        skillDetailSection.style.pointerEvents = 'none';
+    }
+
+    setTimeout(() => {
+        skillsSection?.classList.remove('hidden-panel');
+        skillsSection?.classList.add('visible');
+        if (skillsSection) {
+            skillsSection.style.opacity = '1';
+            skillsSection.style.pointerEvents = 'auto';
+        }
+    }, 200);
 });
 
 tick();

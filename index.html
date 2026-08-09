@@ -17,23 +17,14 @@
   </head>
   <body>
     <div id="flash-overlay" style="opacity: 0; pointer-events: none;"></div>
-    <div id="global-bubbles">
-    <div class="water-bubble wb1"></div>
-    <div class="water-bubble wb2"></div>
-    <div class="water-bubble wb3"></div>
-    <div class="water-bubble wb4"></div>
-    <div class="water-bubble wb5"></div>
-    <div class="water-bubble wb6"></div>
-    <div class="water-bubble wb7"></div>
-    </div>
     <video id="background-video" src="/background.mp4?v=2" autoplay muted loop playsinline style="display: none;"></video>
     <canvas class="webgl"></canvas>
-    <div id="menu-container" class="hidden-panel" style="opacity: 0; pointer-events: none;">
+<div id="menu-container" class="hidden-panel" style="opacity: 0; pointer-events: none;">
       <button id="btn-bio" class="frutiger-card">
           <h3>Autobiografía</h3>
       </button>
-      <button class="frutiger-card">
-          <h3>Recuperando la promesa del mañana...</h3>
+      <button id="btn-skills" class="frutiger-card">
+          <h3>Panel de Habilidades</h3>
       </button>
       <button class="frutiger-card">
           <h3>Recuperando la promesa del mañana...</h3>
@@ -41,7 +32,51 @@
       <button class="frutiger-card">
           <h3>Recuperando la promesa del mañana...</h3>
       </button>
-  </div>
+    </div>
+
+    <div id="skills-section" class="hidden-panel" style="opacity: 0; pointer-events: none;">
+        
+        <div id="skill-desc-tech" class="frutiger-panel-premium lateral-panel">
+            <h2>Tecnología</h2>
+            <p id="txt-tech-desc">Pasa el mouse sobre una habilidad para sincronizar los datos de su arquitectura básica...</p>
+        </div>
+
+        <div class="skills-monitor-frame">
+            <div class="frutiger-panel-premium monitor-core">
+                <h2>Control Core / Tech Stack</h2>
+                <div class="skills-grid">
+                    <div class="skill-item" data-tech="Docker" data-desc-tech="Plataforma de contenedores que automatiza el despliegue de aplicaciones encapsulándolas en entornos aislados y ligeros." data-desc-app="Configuro ambientes aislados multicontenedor, optimizando imágenes base y gestionando volúmenes/redes locales para proyectos universitarios y laboratorios DevOps.">
+                        <img src="/src/assets/typescript.svg" alt="Docker" class="skill-icon" /> <span>Docker</span>
+                    </div>
+                    <div class="skill-item" data-tech="TypeScript" data-desc-tech="Superset de JavaScript que añade tipado estático opcional y herramientas avanzadas para el desarrollo a gran escala." data-desc-app="Implementado en la lógica del portafolio actual y arquitecturas web intermedias, asegurando la consistencia de tipos y reduciendo fallos en tiempo de ejecución.">
+                        <img src="/src/assets/typescript.svg" alt="TypeScript" class="skill-icon" />
+                        <span>TypeScript</span>
+                    </div>
+                    </div>
+            </div>
+        </div>
+
+        <div id="skill-desc-app" class="frutiger-panel-premium lateral-panel">
+            <h2>Aplicación Práctica</h2>
+            <p id="txt-app-desc">Descubre los escenarios y proyectos donde se despliega y optimiza este módulo.</p>
+        </div>
+    </div>
+
+    <div id="skill-detail-section" class="hidden-panel" style="opacity: 0; pointer-events: none;">
+        <div class="frutiger-panel-premium large-project-monitor">
+            <h2 id="detail-title">Proyecto Destacado</h2>
+            
+            <div class="screenshot-container">
+                <img id="detail-img" src="/autobiography.jpeg" alt="Captura del Proyecto" class="project-screenshot" />
+            </div>
+            
+            <div class="project-info-footer">
+                <h3>Análisis de Ejecución</h3>
+                <p id="detail-desc">Descripción detallada de lo que se aprecia en la captura y los hitos logrados con esta herramienta.</p>
+                <button id="btn-back-skills" class="frutiger-card back-button">Volver al Panel</button>
+            </div>
+        </div>
+    </div>
 <div id="bio-section" class="hidden-panel" style="opacity: 0; pointer-events: none;">
     
     <img src="/autobiography.jpeg" alt="Autobiografía" class="bio-image-3d" />
