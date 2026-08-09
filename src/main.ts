@@ -485,34 +485,59 @@ const elapsedTime = clock.getElapsedTime();
     composer.render();
     requestAnimationFrame(tick);
 }
+// ===================================================
+// FUNCIONES AUXILIARES DE NAVEGACIÓN DE PANELES
+// ===================================================
+
+function hidePanel(element: HTMLElement | null) {
+    if (!element) return;
+    element.classList.remove('visible');
+    element.classList.add('hidden-panel');
+    element.style.opacity = '';
+    element.style.pointerEvents = '';
+    element.style.transform = '';
+}
+
+function showPanel(element: HTMLElement | null) {
+    if (!element) return;
+    element.classList.remove('hidden-panel');
+    element.classList.add('visible');
+    element.style.opacity = '';
+    element.style.pointerEvents = '';
+    element.style.transform = '';
+}
 
 // ===================================================
-// CONTROLADORES DE INTERFAZ Y NAVEGACIÓN
+// CONTROLADORES DE INTERFAZ Y NAVEGACIÓN (VERSIÓN ÚNICA)
 // ===================================================
 
 const menu = document.getElementById('menu-container');
 const btnBio = document.getElementById('btn-bio');
 const btnSkills = document.getElementById('btn-skills');
 
-// 1. Click en Autobiografía
+const bioSection = document.getElementById('bio-section');
+const skillsSection = document.getElementById('skills-section');
+const skillDetailSection = document.getElementById('skill-detail-section');
+
+// 1. Abrir Autobiografía desde el Menú
 btnBio?.addEventListener('click', () => {
-    if (menu) { menu.classList.remove('visible'); menu.classList.add('hidden-panel'); }
-    activeSectionTarget = 'bio'; // Le decimos al tick() que abra la biografía
+    hidePanel(menu);
+    activeSectionTarget = 'bio';
     isBloomTransitioning = true;
     bloomTransitionProgress = 0;
     isFlashTriggered = false; 
 });
 
-// 2. Click en Habilidades
+// 2. Abrir Panel de Habilidades desde el Menú
 btnSkills?.addEventListener('click', () => {
-    if (menu) { menu.classList.remove('visible'); menu.classList.add('hidden-panel'); }
-    activeSectionTarget = 'skills'; // Le decimos al tick() que abra habilidades
+    hidePanel(menu);
+    activeSectionTarget = 'skills';
     isBloomTransitioning = true;
     bloomTransitionProgress = 0;
     isFlashTriggered = false;
 });
 
-// 3. Interacción Hover de los Skill Items
+// 3. Hover en Skill Items (Actualización de Paneles Laterales)
 const skillItems = document.querySelectorAll('.skill-item');
 const txtTechDesc = document.getElementById('txt-tech-desc');
 const txtAppDesc = document.getElementById('txt-app-desc');
@@ -529,10 +554,7 @@ skillItems.forEach(item => {
     });
 });
 
-// 4. Click en una habilidad: Transición Zoom hacia la Cámara (Vista detalle)
-const skillsSection = document.getElementById('skills-section');
-const skillDetailSection = document.getElementById('skill-detail-section');
-
+// 4. Click en una Habilidad (Ir a Vista Detalle)
 skillItems.forEach(item => {
     item.addEventListener('click', (e) => {
         const target = e.currentTarget as HTMLElement;
@@ -544,50 +566,55 @@ skillItems.forEach(item => {
         if (detailTitle) detailTitle.innerText = `Dashboard de Ejecución: ${techName}`;
         if (detailDesc) detailDesc.innerText = `Entorno operativo y métricas estables. Esta captura ilustra la implementación funcional utilizando arquitectura limpia basada en las especificaciones del stack core.`;
 
+        // Efecto de Zoom Out en el panel general
         if (skillsSection) {
-            skillsSection.style.transform = 'translate(-50%, -50%) scale(1.4)';
+            skillsSection.style.transform = 'translate(-50%, -50%) scale(1.3)';
             skillsSection.style.opacity = '0';
             skillsSection.style.pointerEvents = 'none';
         }
 
         setTimeout(() => {
-            skillsSection?.classList.remove('visible');
-            skillsSection?.classList.add('hidden-panel');
-            if (skillsSection) skillsSection.style.transform = 'translate(-50%, -50%) scale(1)';
-
-            // CORRECCIÓN: Mostramos el skillDetailSection en lugar de skillsSection de nuevo
-            skillDetailSection?.classList.remove('hidden-panel');
-            skillDetailSection?.classList.add('visible');
-            if (skillDetailSection) {
-                skillDetailSection.style.opacity = '1';
-                skillDetailSection.style.pointerEvents = 'auto';
-            }
+            hidePanel(skillsSection);
+            showPanel(skillDetailSection);
         }, 300);
     });
 });
 
-// 5. Botón de retorno desde la vista detallada
+// 5. Botón: "Volver al Panel" (Desde la Vista Detalle hacia la Grilla de Habilidades)
 const btnBackSkills = document.getElementById('btn-back-skills');
 btnBackSkills?.addEventListener('click', () => {
-    
-    // CORRECCIÓN: Ocultamos skillDetailSection en lugar de skillsSection
-    skillDetailSection?.classList.remove('visible');
-    skillDetailSection?.classList.add('hidden-panel');
-    if (skillDetailSection) {
-        skillDetailSection.style.opacity = '0';
-        skillDetailSection.style.pointerEvents = 'none';
-    }
+    hidePanel(skillDetailSection);
 
     setTimeout(() => {
-        skillsSection?.classList.remove('hidden-panel');
-        skillsSection?.classList.add('visible');
-        if (skillsSection) {
-            skillsSection.style.opacity = '1';
-            skillsSection.style.pointerEvents = 'auto';
-        }
+        showPanel(skillsSection);
     }, 200);
 });
 
+// 6. Botón: "Volver al Menú" (Desde Habilidades hacia el Menú / 3D)
+const btnBackSkillsMenu = document.getElementById('btn-back-skills-menu');
+btnBackSkillsMenu?.addEventListener('click', () => {
+    hidePanel(skillsSection);
+
+    setTimeout(() => {
+        profileMesh.visible = true;
+        borderMesh.visible = true;
+        showPanel(menu);
+    }, 200);
+});
+
+// 7. Botón: "Volver al Inicio" (Desde Autobiografía hacia el Menú / 3D)
+const btnBackBio = document.getElementById('btn-back-bio');
+btnBackBio?.addEventListener('click', () => {
+    hidePanel(bioSection);
+
+    setTimeout(() => {
+        profileMesh.visible = true;
+        borderMesh.visible = true;
+        showPanel(menu);
+    }, 200);
+});
+
+// --- INICIALIZACIÓN ---
 tick();
 window.addEventListener('resize', () => {
     sizes.width = window.innerWidth;

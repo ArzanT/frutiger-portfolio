@@ -546,3 +546,24 @@ body {
         max-height: 20vh;
     }
 }
+
+.btn-back-top {
+    position: absolute;
+    top: -60px;          /* Lo sitúa arriba del contenedor principal */
+    left: 0;
+    min-height: auto !important;
+    padding: 12px 24px !important;
+    font-size: 0.9rem !important;
+    border-radius: 12px !important;
+    z-index: 30;         /* Se mantiene siempre al frente */
+}
+
+/* Ajuste fino de adaptabilidad para pantallas pequeñas */
+@media (max-width: 900px) {
+    .btn-back-top {
+        position: relative;
+        top: 0;
+        margin-bottom: 20px;
+        width: 100%;     /* Se expande a lo ancho en móviles */
+    }
+}
